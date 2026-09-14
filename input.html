@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Basic Information</title>
+  
+</head>
+
+<body data-page="reservation">
+
+  <div class="container">
+    <h2>基本情報 / Basic Information</h2>
+    <p class="page-subtitle" data-page-subtitle>選択した日時を確認し、必要事項を入力してください。</p>
+
+    <div class="details">
+      <p><strong>時間：</strong><span id="time-slot"></span></p>
+      <p><strong>日程：</strong><span id="date"></span></p>
+
+      <p><strong>名前 / Name (alphabet)：</strong>
+        <input type="text" id="name" placeholder="e.g. Yamada Taro" required>
+      </p>
+
+      <p><strong>名前 / Name (katakana)：</strong>
+        <input type="text" id="kana" placeholder="ヤマダ タロウ" required>
+      </p>
+
+      <p><strong>国籍・地域 / Nationality・Region：</strong>
+        <input type="text" id="nationality" placeholder="e.g. China / 日本 / Vietnam" required>
+      </p>
+
+      <p><strong>身分 / Status：</strong>
+        <select id="status" required>
+          <option value="">-- 選択してください / Please select --</option>
+          <option value="JUSST Program student">J：JUSST Program student</option>
+          <option value="研究生 / Research student">RS：研究生 / Research student</option>
+          <option value="博士後期課程学生 / Ph. D. student">D：博士後期課程学生 / Ph. D. student</option>
+          <option value="博士前期課程学生 / Master student">M：博士前期課程学生 / Master student</option>
+          <option value="配偶者">S：配偶者 / Spouse</option>
+        </select>
+      </p>
+
+<!--      <p><strong>メールアドレス / Mail：</strong>
+        <input type="email" id="email" placeholder="example@email.com" required>
+      </p>
+-->
+    </div>
+
+    <div class="form-actions">
+      <button id="confirm" class="btn primary" type="button">確定 / OK</button>
+      <button id="back" class="btn cancel" type="button">戻る / BACK</button>
+    </div>
+
+    <div id="alert-message" class="alert"></div>
+  </div>
+
+  <div id="footer-container"></div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <script src="assets/js/common.js"></script>
+  <script src="assets/js/reservation.js"></script>
+</body>
+
+</html>
+
