@@ -1,94 +1,102 @@
-const { client: supabaseClient, formatDate, loadFooter, t } = window.ReservationApp;
+const { client: supabaseClient, formatJapaneseDate, loadFooter, t } = window.ReservationApp;
+
 const table = document.getElementById("result-table");
 const tbody = table.querySelector("tbody");
 const emptyMessage = document.getElementById("empty");
-let reservation = null;
-let reservationCode = "";
+let searchResults = [];
 
 loadFooter();
 
-/** 安全地向表格行写入纯文本单元格，避免用户资料被当作 HTML 执行。 */
+/** 以纯文本创建单元格，避免用户输入被解释为 HTML。 */
 function appendCell(row, value) {
   const cell = document.createElement("td");
   cell.textContent = value || "";
   row.appendChild(cell);
 }
 
-/** 将预约编号验证通过后返回的单条预约资料显示在页面上。 */
-function renderReservation() {
+/** 绘制查询结果并绑定每条预约的取消按钮。 */
+function renderResults() {
   tbody.replaceChildren();
   emptyMessage.textContent = "";
-  table.style.display = reservation ? "table" : "none";
-  if (!reservation) return;
+  table.style.display = searchResults.length ? "table" : "none";
 
-  const row = document.createElement("tr");
-  appendCell(row, formatDate(reservation.slot_date));
-  appendCell(row, reservation.time_slot);
-  appendCell(row, reservation.name);
-  appendCell(row, reservation.kana);
-  appendCell(row, reservation.nationality);
-  appendCell(row, reservation.status);
+  searchResults.forEach((enrollment) => {
+    const row = document.createElement("tr");
+    appendCell(row, formatJapaneseDate(enrollment.date));
+    appendCell(row, enrollment.time_slot);
+    appendCell(row, enrollment.name);
+    appendCell(row, enrollment.kana);
+    appendCell(row, enrollment.nationality);
+    appendCell(row, enrollment.status);
 
-  const actionCell = document.createElement("td");
-  const cancelButton = document.createElement("button");
-  cancelButton.type = "button";
-  cancelButton.className = "btn cancel";
-  cancelButton.textContent = t("cancel");
-  cancelButton.addEventListener("click", cancelReservation);
-  actionCell.appendChild(cancelButton);
-  row.appendChild(actionCell);
-  tbody.appendChild(row);
+    const actionCell = document.createElement("td");
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.className = "btn cancel";
+    cancelButton.textContent = t("cancel");
+    cancelButton.addEventListener("click", () => cancelEnrollment(enrollment));
+    actionCell.appendChild(cancelButton);
+    row.appendChild(actionCell);
+    tbody.appendChild(row);
+  });
 }
 
-/** 以预约编号为凭证取消记录，避免只凭姓名删除他人的预约。 */
-async function cancelReservation() {
-  if (!reservation) return;
-  if (!confirm(t("cancelPrompt", formatDate(reservation.slot_date), reservation.time_slot))) return;
+/** 按独立预约 ID 删除一条记录，避免同名用户互相影响。 */
+async function cancelEnrollment(enrollment) {
+  if (!confirm(t("cancelPrompt", formatJapaneseDate(enrollment.date), enrollment.time_slot))) return;
 
-  const { data, error } = await supabaseClient.rpc("cancel_my_reservation", {
-    p_reservation_code: reservationCode
-  });
+  const { error } = await supabaseClient
+    .from("exam_reservations")
+    .delete()
+    .eq("id", enrollment.id);
 
-  if (error || !data) {
-    console.error("取消预约失败：", error);
+  if (error) {
+    console.error(error);
     alert(t("loadFailed"));
     return;
   }
 
   alert(t("cancelSucceeded"));
-  window.location.href = "index.html";
+  window.setTimeout(() => { window.location.href = "index.html"; }, 800);
 }
 
-// 点击查询时仅把预约编号交给数据库函数，不公开完整预约表。
+// 按预约姓名精确查询，清空旧表格后展示本次结果或空状态。
 document.getElementById("search").addEventListener("click", async () => {
-  reservationCode = document.getElementById("reservation-code").value.trim().toUpperCase();
-  if (!reservationCode) {
-    alert(t("enterReservationCode"));
+  const name = document.getElementById("name").value.trim();
+  if (!name) {
+    alert(t("enterName"));
     return;
   }
 
-  const { data, error } = await supabaseClient.rpc("find_my_reservation", {
-    p_reservation_code: reservationCode
-  });
+  tbody.replaceChildren();
+  emptyMessage.textContent = "";
+  table.style.display = "none";
+
+  const { data, error } = await supabaseClient
+    .from("exam_reservations")
+    .select("*, slot:exam_slots(exam_date, starts_at, ends_at)")
+    .eq("name", name);
 
   if (error) {
-    console.error("预约查询失败：", error);
     alert(t("loadFailed"));
+    console.error(error);
     return;
   }
 
-  reservation = data && data.length ? data[0] : null;
-  if (!reservation) {
-    tbody.replaceChildren();
-    table.style.display = "none";
+  searchResults = data.map(window.ReservationApp.flattenReservation).sort((a, b) => {
+    if (a.date !== b.date) return a.date.localeCompare(b.date);
+    return a.slot.starts_at.localeCompare(b.slot.starts_at);
+  });
+
+  if (!searchResults.length) {
     emptyMessage.textContent = t("noReservation");
     return;
   }
 
-  renderReservation();
+  renderResults();
 });
 
-// 切换语言时重新绘制已有查询结果的日期、按钮与表格文字。
+// 切换语言后刷新已查询的日期及取消按钮文案。
 document.addEventListener("reservation-language-change", () => {
-  if (reservation) renderReservation();
+  if (searchResults.length) renderResults();
 });

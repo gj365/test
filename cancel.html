@@ -14,14 +14,14 @@
   <div class="container">
 
     <h2>予約確認 / キャンセル（View / Cancel）</h2>
-    <p class="page-subtitle" data-page-subtitle>予約完了時に表示された予約番号を入力してください。</p>
 
     <div class="search-box">
-      <input type="text" id="reservation-code" autocomplete="off" autocapitalize="characters" spellcheck="false">
+<!--      <input type="email" id="email" placeholder="予約時のメールアドレス / Enter your reservation email">
+-->
+      <input type="text" id="name" autocomplete="name">
       <button id="search" class="btn primary">検索 / Search</button>
     </div>
 
-    <div class="table-scroll">
     <table id="result-table" style="display:none;">
       <thead>
         <tr>
@@ -36,7 +36,6 @@
       </thead>
       <tbody></tbody>
     </table>
-    </div>
 
     <div id="empty" class="empty"></div>
 

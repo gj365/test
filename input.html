@@ -13,7 +13,6 @@
 
   <div class="container">
     <h2>基本情報 / Basic Information</h2>
-    <p class="page-subtitle" data-page-subtitle>選択した日時を確認し、必要事項を入力してください。</p>
 
     <div class="details">
       <p><strong>時間：</strong><span id="time-slot"></span></p>
@@ -28,7 +27,7 @@
       </p>
 
       <p><strong>国籍・地域 / Nationality・Region：</strong>
-        <input type="text" id="nationality" placeholder="e.g. China / 日本 / United States" required>
+        <input type="text" id="nationality" placeholder="e.g. China / 日本 / Vietnam" required>
       </p>
 
       <p><strong>身分 / Status：</strong>
@@ -42,21 +41,16 @@
         </select>
       </p>
 
+<!--      <p><strong>メールアドレス / Mail：</strong>
+        <input type="email" id="email" placeholder="example@email.com" required>
+      </p>
+-->
     </div>
 
-    <div class="form-actions">
-      <button id="confirm" class="btn primary" type="button">確定 / OK</button>
-      <button id="back" class="btn cancel" type="button">戻る / BACK</button>
-    </div>
+    <button id="confirm" class="btn primary">確定 / OK</button>
+    <button id="back" class="btn cancel">戻る / BACK</button>
 
     <div id="alert-message" class="alert"></div>
-    <section id="reservation-success" class="reservation-success" hidden>
-      <p id="success-message"></p>
-      <p class="reservation-code-label" data-reservation-code-label>予約番号</p>
-      <output id="reservation-code" class="reservation-code"></output>
-      <p id="reservation-code-notice" class="reservation-code-notice"></p>
-      <a href="index.html" class="btn primary">トップへ戻る</a>
-    </section>
   </div>
 
   <div id="footer-container"></div>
@@ -64,6 +58,7 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
   <script src="assets/js/common.js"></script>
+  <script src="assets/js/schedule-store.js"></script>
   <script src="assets/js/reservation.js"></script>
 </body>
 

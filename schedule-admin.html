@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <title>日程・時間・定員の管理</title>
+</head>
+<body data-page="schedule-admin">
+  <main class="container">
+    <h2 data-copy="manageSchedule">日程・時間・定員の管理</h2>
+    <p class="schedule-help" data-copy="scheduleHelp"></p>
+    <div class="schedule-toolbar">
+      <span id="edit-state" class="state-badge"></span>
+      <button id="edit-schedule" class="btn primary" type="button" disabled data-copy="editSchedule"></button>
+      <button id="save-schedule" class="btn primary" type="button" hidden data-copy="saveSchedule"></button>
+      <button id="discard-schedule" class="btn cancel" type="button" hidden data-copy="discardSchedule"></button>
+      <button id="reload-schedule" class="btn cancel" type="button" data-copy="reloadSchedule"></button>
+    </div>
+    <p id="schedule-message" role="status" aria-live="polite"></p>
+    <div class="table-scroll">
+      <table id="schedule-editor"><thead></thead><tbody></tbody></table>
+    </div>
+    <div id="add-controls" class="schedule-toolbar" hidden>
+      <button id="add-date" class="btn primary" type="button" data-copy="addDate"></button>
+      <button id="add-time" class="btn primary" type="button" data-copy="addTime"></button>
+    </div>
+    <div class="actions"><a href="result.html" class="btn cancel" data-copy="backAdmin"></a></div>
+  </main>
+  <div id="footer-container"></div>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="assets/js/common.js"></script>
+  <script src="assets/js/schedule-store.js"></script>
+  <script src="assets/js/schedule-admin.js"></script>
+</body>
+</html>
