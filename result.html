@@ -15,7 +15,15 @@
 
     <h2>予約一覧 / Reservation List</h2>
     <p class="page-subtitle" data-page-subtitle>現在登録されている予約を確認し、必要に応じて CSV をダウンロードできます。</p>
+    <div id="admin-message" class="alert" hidden></div>
+    <button id="staff-login" class="btn primary" type="button" hidden></button>
+    <nav class="admin-tabs" aria-label="Management sections">
+      <button class="btn secondary is-active" type="button" data-admin-tab data-view="reservations">予約一覧</button>
+      <button class="btn secondary" type="button" data-admin-tab data-view="slots">時段・名額管理</button>
+      <button class="btn secondary" type="button" data-admin-tab data-view="settings">受付期間設定</button>
+    </nav>
 
+    <section data-admin-panel="reservations">
     <div class="table-scroll">
     <table id="result-table">
       <thead>
@@ -26,13 +34,33 @@
           <th>カタカナ</th>
           <th>国籍・地域</th>
           <th>身分</th>
-          <th>メールアドレス</th>
           <th>登録日時</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
     </div>
+    </section>
+
+    <section data-admin-panel="slots" hidden>
+      <form id="slot-form" class="admin-form">
+        <label><span data-slot-label>日付</span><input id="slot-date" type="date" required></label>
+        <label><span data-slot-label>時間</span><input id="slot-time" type="text" placeholder="9:00 - 9:30" required></label>
+        <label><span data-slot-label>定員</span><input id="slot-capacity" type="number" min="1" required></label>
+        <label class="checkbox-label"><input id="slot-open" type="checkbox" checked><span data-slot-label>受付中</span></label>
+        <button id="save-slot" class="btn primary" type="submit">時段を保存</button>
+      </form>
+      <div class="table-scroll"><table id="slot-table"><thead><tr><th>日付</th><th>時間</th><th>定員</th><th>受付中</th></tr></thead><tbody></tbody></table></div>
+    </section>
+
+    <section data-admin-panel="settings" hidden>
+      <form id="settings-form" class="admin-form settings-form">
+        <label class="checkbox-label"><input id="system-enabled" type="checkbox"><span data-settings-label>予約受付を有効にする</span></label>
+        <label><span data-settings-label>受付開始日時</span><input id="booking-opens-at" type="datetime-local" required></label>
+        <label><span data-settings-label>受付終了日時</span><input id="booking-closes-at" type="datetime-local" required></label>
+        <button id="save-settings" class="btn primary" type="submit">設定を保存</button>
+      </form>
+    </section>
 
     <div class="actions">
       <button id="export-btn" class="btn primary">CSVエクスポート</button>
