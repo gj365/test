@@ -1,11 +1,9 @@
 const { client: supabaseClient, loadFooter, t, localizeSlotLabels } = window.ReservationApp;
-
-const DEADLINE = new Date("2026-09-23T23:59:59");
 let scheduleLoaded = false;
 
 loadFooter();
 
-/** Disables every bookable slot and shows the deadline-closed notice. */
+/** 系统未开放或没有开放时段时，禁用课程表并显示明确的关闭提示。 */
 function closeSchedule() {
   document.querySelectorAll(".slot").forEach((cell) => {
     cell.classList.add("full");
@@ -20,7 +18,7 @@ function closeSchedule() {
   localizeSlotLabels();
 }
 
-/** Opens the reservation form for an available date and time. */
+/** 仅在课程表已载入且时段可用时，进入预约表单。 */
 function goToEnrollPage(time, date) {
   if (!scheduleLoaded) return;
 
@@ -30,63 +28,53 @@ function goToEnrollPage(time, date) {
     return;
   }
 
-  const capacity = cell.dataset.capacity;
   window.location.href = "input.html?time=" + encodeURIComponent(time)
-    + "&date=" + encodeURIComponent(date)
-    + "&capacity=" + encodeURIComponent(capacity);
+    + "&date=" + encodeURIComponent(date);
 }
 
-window.goToEnrollPage = goToEnrollPage;
+/** 将数据库返回的剩余名额写入对应的课程表格。 */
+function renderAvailability(slots) {
+  if (!slots.length) {
+    closeSchedule();
+    return;
+  }
 
-/** Counts existing reservations by their combined date-and-time key. */
-function groupBySlot(enrollments) {
-  return enrollments.reduce((counts, enrollment) => {
-    const key = enrollment.time_slot + "_" + enrollment.date;
-    counts[key] = (counts[key] || 0) + 1;
-    return counts;
-  }, {});
-}
-
-/** Calculates remaining seats and updates the timetable's visual state. */
-function renderAvailability(enrollments) {
-  const counts = groupBySlot(enrollments);
+  const slotMap = new Map(slots.map((slot) => [slot.slot_date + "_" + slot.time_slot, slot.remaining]));
 
   document.querySelectorAll("td[data-capacity]").forEach((cell) => {
-    const key = cell.dataset.time + "_" + cell.dataset.date;
-    const remaining = Number(cell.dataset.capacity) - (counts[key] || 0);
-    cell.dataset.remaining = String(Math.max(remaining, 0));
+    const remaining = slotMap.get(cell.dataset.date + "_" + cell.dataset.time);
+    const available = Number.isInteger(remaining) && remaining > 0;
 
-    cell.classList.toggle("full", remaining <= 0);
-    cell.classList.toggle("slot", remaining > 0);
-    cell.style.pointerEvents = remaining > 0 ? "" : "none";
+    cell.dataset.remaining = String(Math.max(remaining || 0, 0));
+    cell.classList.toggle("full", !available);
+    cell.classList.toggle("slot", available);
+    cell.style.pointerEvents = available ? "" : "none";
   });
 
   localizeSlotLabels();
 }
 
-/** Retrieves reservations from Supabase, then refreshes the timetable. */
+/** 通过仅返回名额的 RPC 读取课程表，避免向公众公开预约者资料。 */
 async function loadSchedule() {
-  const { data, error } = await supabaseClient
-    .from("enrollments")
-    .select("time_slot, date");
+  const { data, error } = await supabaseClient.rpc("get_reservation_schedule");
 
   if (error) {
-    console.error(error.message);
+    console.error("课程表载入失败：", error.message);
     return;
   }
 
-  renderAvailability(data);
+  renderAvailability(data || []);
   scheduleLoaded = true;
 }
 
-// Choose the appropriate timetable state as soon as the page opens.
-if (new Date() > DEADLINE) {
-  closeSchedule();
-} else {
-  loadSchedule();
-}
+// 使用事件监听替代 HTML 内联 onclick，使行为集中在本模块中维护。
+document.querySelectorAll("td[data-time][data-date]").forEach((cell) => {
+  cell.addEventListener("click", () => goToEnrollPage(cell.dataset.time, cell.dataset.date));
+});
 
-// Refresh labels that depend on the selected language without reloading schedule data.
+loadSchedule();
+
+// 切换语言时只更新时段标签，不重复请求数据库。
 document.addEventListener("reservation-language-change", () => {
   const notice = document.querySelector("[data-closed-notice]");
   if (notice) notice.textContent = t("closed");

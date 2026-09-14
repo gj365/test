@@ -1,46 +1,40 @@
-const { client: supabaseClient, formatJapaneseDate, loadFooter, t } = window.ReservationApp;
-
+const { client: supabaseClient, formatDate, loadFooter, t } = window.ReservationApp;
 const parameters = new URLSearchParams(window.location.search);
 const timeSlot = parameters.get("time");
-const date = parameters.get("date");
-const capacity = Number(parameters.get("capacity"));
+const slotDate = parameters.get("date");
 
 loadFooter();
 
-/** Displays the selected date and time using the currently active language. */
+/** 按当前语言显示从课程表带来的预约日期和时间。 */
 function renderSelectedSlot() {
   document.getElementById("time-slot").textContent = timeSlot || "";
-  document.getElementById("date").textContent = date ? formatJapaneseDate(date) : "";
+  document.getElementById("date").textContent = slotDate ? formatDate(slotDate) : "";
 }
 
-/** Checks whether the selected slot still has at least one available seat. */
-async function hasAvailability() {
-  const { count, error } = await supabaseClient
-    .from("enrollments")
-    .select("*", { count: "exact", head: true })
-    .eq("time_slot", timeSlot)
-    .eq("date", date);
-
-  if (error) {
-    console.error("Enrollment check failed:", error.message);
-    return false;
-  }
-
-  if (count >= capacity) {
-    document.getElementById("alert-message").textContent = t("fullMessage");
-    window.setTimeout(() => { window.location.href = "index.html"; }, 3000);
-    return false;
-  }
-
-  return true;
+/** 将数据库错误代码转换为学生可理解的提示。 */
+function getReservationErrorMessage(error) {
+  if (error.code === "P0001" && error.message.includes("already_reserved")) return t("alreadyReserved");
+  if (error.code === "P0001" && error.message.includes("slot_full")) return t("fullMessage");
+  if (error.code === "P0001" && error.message.includes("invalid_slot")) return t("invalidSlot");
+  if (error.code === "P0001" && error.message.includes("closed")) return t("closedMessage");
+  return t("reservationFailed");
 }
 
-// Return without changing the reservation data when the visitor chooses another slot.
+/** 显示预约成功信息和只显示一次的预约编号。 */
+function showReservationComplete(reservationCode) {
+  document.querySelector(".details").hidden = true;
+  document.querySelector(".form-actions").hidden = true;
+  document.getElementById("alert-message").hidden = true;
+  document.getElementById("reservation-code").textContent = reservationCode;
+  document.getElementById("reservation-success").hidden = false;
+}
+
+// 点击返回时不提交任何个人资料。
 document.getElementById("back").addEventListener("click", () => {
   window.location.href = "index.html";
 });
 
-// Validate, confirm, and submit the reservation after the primary button is pressed.
+// 校验表单、让学生确认内容，再通过原子 RPC 创建预约。
 document.getElementById("confirm").addEventListener("click", async () => {
   const name = document.getElementById("name").value.trim();
   const kana = document.getElementById("kana").value.trim();
@@ -52,16 +46,14 @@ document.getElementById("confirm").addEventListener("click", async () => {
     return;
   }
 
-  if (!timeSlot || !date || !Number.isFinite(capacity)) {
+  if (!timeSlot || !slotDate) {
+    alert(t("invalidSlot"));
     window.location.href = "index.html";
     return;
   }
 
-  const available = await hasAvailability();
-  if (!available) return;
-
   const confirmed = confirm(t("reservationPrompt", {
-    date: formatJapaneseDate(date),
+    date: formatDate(slotDate),
     time: timeSlot,
     name,
     kana,
@@ -70,20 +62,24 @@ document.getElementById("confirm").addEventListener("click", async () => {
   }));
   if (!confirmed) return;
 
-  const { error } = await supabaseClient
-    .from("enrollments")
-    .insert([{ time_slot: timeSlot, date, name, kana, nationality, status }]);
+  const { data, error } = await supabaseClient.rpc("create_reservation", {
+    p_slot_date: slotDate,
+    p_time_slot: timeSlot,
+    p_name: name,
+    p_kana: kana,
+    p_nationality: nationality,
+    p_status: status
+  });
 
   if (error) {
-    console.error(error);
-    alert(t("reservationFailed"));
+    console.error("预约创建失败：", error);
+    alert(getReservationErrorMessage(error));
     return;
   }
 
-  alert(t("reservationSucceeded"));
-  window.location.href = "index.html";
+  showReservationComplete(data);
 });
 
-// Keep the date format synchronized when the visitor changes language.
+// 语言切换时同步刷新预约日期的显示格式。
 document.addEventListener("reservation-language-change", renderSelectedSlot);
 renderSelectedSlot();

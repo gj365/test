@@ -20,32 +20,43 @@ window.ReservationApp = (() => {
       formLabels: ["時間", "日程", "氏名（アルファベット）", "氏名（カタカナ）", "国籍・地域", "在留資格・身分"],
       namePlaceholder: "例：Yamada Taro",
       kanaPlaceholder: "例：ヤマダ タロウ",
-      nationalityPlaceholder: "例：中国、日本、ベトナム",
+      nationalityPlaceholder: "例：中国、日本、アメリカ",
       statusPlaceholder: "選択してください",
       statusOptions: ["J：JUSST プログラム学生", "RS：研究生", "D：博士後期課程学生", "M：博士前期課程学生", "S：配偶者"],
       confirm: "この内容で予約する",
       back: "日時選択へ戻る",
       required: "未入力の項目があります。すべての項目を入力してから、もう一度お試しください。",
       fullMessage: "この時間帯は満席です。恐れ入りますが、ほかの時間帯を選択してください。",
-      reservationPrompt: (data) => "以下の内容で予約します。\n\n日程：" + data.date + "\n時間：" + data.time + "\n氏名：" + data.name + "\nカタカナ：" + data.kana + "\n国籍・地域：" + data.nationality + "\n身分：" + data.status + "\n\nよろしいですか？",
+      closedMessage: "予約受付は終了しました。",
+      alreadyReserved: "すでに予約があります。1人につき予約できるのは1回のみです。",
+      invalidSlot: "選択した日時は予約できません。日時選択ページから、もう一度選択してください。",
+      reservationPrompt: (data) => "以下の内容で予約します。\n\n日程：" + data.date + "\n時間：" + data.time + "\n氏名：" + data.name + "\n国籍・地域：" + data.nationality + "\n身分：" + data.status + "\n\nよろしいですか？",
       reservationFailed: "予約を完了できませんでした。通信状況を確認して、もう一度お試しください。",
-      reservationSucceeded: "予約が完了しました。予約日時を控えてください。",
-      adminPasswordPrompt: "予約管理用のパスワードを入力してください：",
-      adminPasswordFailed: "パスワードが正しくありません。トップページに戻ります。",
+      reservationSucceeded: "予約が完了しました。以下の予約番号は、確認・キャンセル時に必要です。",
+      reservationCodeLabel: "予約番号",
+      reservationCodeNotice: "この番号は再表示できません。必ず保存してください。",
       adminTitle: "予約管理｜予約一覧",
-      adminSubtitle: "現在登録されている予約を確認し、必要に応じて CSV をダウンロードできます。",
-      adminHeaders: ["日程", "時間", "氏名", "カタカナ", "国籍・地域", "身分", "メールアドレス", "登録日時"],
+      adminSubtitle: "スタッフアカウントでログイン済みの場合のみ、予約一覧を表示できます。",
+      adminHeaders: ["日程", "時間", "氏名", "カタカナ", "国籍・地域", "身分", "登録日時"],
       exportCsv: "CSV をダウンロード",
+      adminTabs: ["予約一覧", "時段・名額管理", "受付期間設定"],
+      slotLabels: ["日付", "時間", "定員", "受付中"],
+      saveSlot: "時段を保存",
+      settingsLabels: ["予約受付を有効にする", "受付開始日時", "受付終了日時"],
+      saveSettings: "設定を保存",
+      saved: "設定を保存しました。",
       returnTop: "トップへ戻る",
+      staffOnly: "このページはスタッフ専用です。管理者アカウントでログインしてください。",
+      staffLogin: "Google でスタッフログイン",
       loadFailed: "データを読み込めませんでした。ネットワーク接続を確認して、もう一度お試しください。",
       cancelTitle: "予約の確認・キャンセル",
-      cancelSubtitle: "予約時に入力した氏名（アルファベット）で検索してください。",
-      searchPlaceholder: "例：Yamada Taro",
-      search: "検索",
-      cancelHeaders: ["日程", "時間", "氏名（アルファベット）", "氏名（カタカナ）", "国籍・地域", "身分", "操作"],
-      cancel: "キャンセル",
-      enterName: "予約時に入力した氏名（アルファベット）を入力してください。",
-      noReservation: "該当する予約は見つかりませんでした。入力内容を確認して、もう一度検索してください。",
+      cancelSubtitle: "予約完了時に表示された予約番号を入力してください。",
+      reservationCodePlaceholder: "例：A1B2C3D4E5F6",
+      search: "予約を確認する",
+      cancelHeaders: ["日程", "時間", "氏名", "カタカナ", "国籍・地域", "身分", "操作"],
+      cancel: "この予約をキャンセル",
+      enterReservationCode: "予約番号を入力してください。",
+      noReservation: "該当する予約は見つかりませんでした。予約番号を確認してください。",
       cancelPrompt: (date, time) => date + " " + time + " の予約をキャンセルしますか？\nこの操作は取り消せません。",
       cancelSucceeded: "予約をキャンセルしました。"
     },
@@ -63,38 +74,49 @@ window.ReservationApp = (() => {
       formLabels: ["Time", "Date", "Name (alphabet)", "Name (katakana)", "Nationality / region", "Status"],
       namePlaceholder: "e.g. Yamada Taro",
       kanaPlaceholder: "e.g. ヤマダ タロウ",
-      nationalityPlaceholder: "e.g. China, Japan, Vietnam",
+      nationalityPlaceholder: "e.g. China, Japan, United States",
       statusPlaceholder: "Please select",
       statusOptions: ["J: JUSST Program student", "RS: Research student", "D: Ph.D. student", "M: Master's student", "S: Spouse"],
       confirm: "Confirm reservation",
       back: "Back to time selection",
       required: "Some required information is missing. Please complete all fields and try again.",
       fullMessage: "This time slot is fully booked. Please choose another available time.",
-      reservationPrompt: (data) => "Confirm this reservation?\n\nDate: " + data.date + "\nTime: " + data.time + "\nName: " + data.name + "\nKatakana: " + data.kana + "\nNationality / region: " + data.nationality + "\nStatus: " + data.status,
+      closedMessage: "The reservation period has ended.",
+      alreadyReserved: "You already have a reservation. Each student may reserve only one time slot.",
+      invalidSlot: "This time slot is not available. Please return to the schedule and choose a listed slot.",
+      reservationPrompt: (data) => "Confirm this reservation?\n\nDate: " + data.date + "\nTime: " + data.time + "\nName: " + data.name + "\nNationality / region: " + data.nationality + "\nStatus: " + data.status,
       reservationFailed: "We could not complete your reservation. Check your connection and try again.",
-      reservationSucceeded: "Your reservation is complete. Please keep a note of your date and time.",
-      adminPasswordPrompt: "Enter the reservation-management password:",
-      adminPasswordFailed: "Incorrect password. Returning to the top page.",
+      reservationSucceeded: "Your reservation is complete. You need the reservation code below to view or cancel it.",
+      reservationCodeLabel: "Reservation code",
+      reservationCodeNotice: "This code cannot be shown again. Please save it now.",
       adminTitle: "Reservation management | List",
-      adminSubtitle: "Review current reservations or download the list as a CSV file.",
-      adminHeaders: ["Date", "Time", "Name", "Katakana", "Nationality / region", "Status", "Email", "Created at"],
+      adminSubtitle: "The reservation list is available only to signed-in staff accounts.",
+      adminHeaders: ["Date", "Time", "Name", "Katakana", "Nationality / region", "Status", "Created at"],
       exportCsv: "Download CSV",
+      adminTabs: ["Reservations", "Slots and capacity", "Booking period"],
+      slotLabels: ["Date", "Time", "Capacity", "Open for booking"],
+      saveSlot: "Save slot",
+      settingsLabels: ["Enable reservations", "Booking opens", "Booking closes"],
+      saveSettings: "Save settings",
+      saved: "Settings saved.",
       returnTop: "Back to top",
+      staffOnly: "This page is for staff only. Sign in with an administrator account.",
+      staffLogin: "Staff sign in with Google",
       loadFailed: "We could not load the data. Check your network connection and try again.",
       cancelTitle: "View or cancel reservation",
-      cancelSubtitle: "Search using the alphabetic name entered when you made your reservation.",
-      searchPlaceholder: "e.g. Yamada Taro",
-      search: "Search",
-      cancelHeaders: ["Date", "Time", "Name (alphabet)", "Name (katakana)", "Nationality / region", "Status", "Action"],
-      cancel: "Cancel",
-      enterName: "Enter the alphabetic name used for your reservation.",
-      noReservation: "No matching reservation was found. Please check the name and try again.",
+      cancelSubtitle: "Enter the reservation code displayed after your reservation was completed.",
+      reservationCodePlaceholder: "e.g. A1B2C3D4E5F6",
+      search: "View reservation",
+      cancelHeaders: ["Date", "Time", "Name", "Katakana", "Nationality / region", "Status", "Action"],
+      cancel: "Cancel this reservation",
+      enterReservationCode: "Enter your reservation code.",
+      noReservation: "No reservation was found. Please check your reservation code.",
       cancelPrompt: (date, time) => "Cancel the reservation for " + date + " " + time + "?\nThis action cannot be undone.",
       cancelSucceeded: "Reservation cancelled."
     }
   };
 
-  /** Returns the saved language, with Japanese as the default. */
+  /** 从浏览器读取语言偏好；没有记录时使用日文。 */
   function getLanguage() {
     try {
       return localStorage.getItem(storageKey) === "en" ? "en" : "ja";
@@ -105,20 +127,20 @@ window.ReservationApp = (() => {
 
   let language = getLanguage();
 
-  /** Resolves a translated phrase; supports phrases that require parameters. */
+  /** 根据当前语言取得文案；支持传递文案所需参数。 */
   function t(key, ...args) {
     const value = copy[language][key];
     return typeof value === "function" ? value(...args) : value;
   }
 
-  /** Replaces a sequence of matching elements with the corresponding translations. */
+  /** 依次替换多个元素的显示文字。 */
   function setTextList(selector, values) {
     document.querySelectorAll(selector).forEach((element, index) => {
       if (values[index] !== undefined) element.textContent = values[index];
     });
   }
 
-  /** Updates availability labels after the selected language or remaining seats change. */
+  /** 根据剩余名额和当前语言更新课程表中的名额文字。 */
   function localizeSlotLabels() {
     document.querySelectorAll("td[data-capacity]").forEach((cell) => {
       cell.textContent = cell.classList.contains("full")
@@ -127,14 +149,15 @@ window.ReservationApp = (() => {
     });
   }
 
-  /** Applies translated titles, labels, buttons, and descriptive copy to the current page. */
+  /** 把当前页面的标题、说明、表头和按钮替换为所选语言。 */
   function applyPageCopy() {
     document.documentElement.lang = language;
+    const subtitle = document.querySelector("[data-page-subtitle]");
 
     if (page === "schedule") {
       document.title = t("scheduleTitle");
       document.querySelector("h2").textContent = t("scheduleTitle");
-      document.querySelector("[data-page-subtitle]").textContent = t("scheduleSubtitle");
+      subtitle.textContent = t("scheduleSubtitle");
       setTextList("#schedule thead th", t("scheduleHeaders"));
       document.querySelector(".break").textContent = t("break");
       setTextList(".buttons .btn", t("scheduleButtons"));
@@ -144,7 +167,7 @@ window.ReservationApp = (() => {
     if (page === "reservation") {
       document.title = t("basicInfo");
       document.querySelector("h2").textContent = t("basicInfo");
-      document.querySelector("[data-page-subtitle]").textContent = t("formSubtitle");
+      subtitle.textContent = t("formSubtitle");
       setTextList(".details p strong", t("formLabels"));
       document.getElementById("name").placeholder = t("namePlaceholder");
       document.getElementById("kana").placeholder = t("kanaPlaceholder");
@@ -154,30 +177,39 @@ window.ReservationApp = (() => {
       t("statusOptions").forEach((label, index) => { status.options[index + 1].textContent = label; });
       document.getElementById("confirm").textContent = t("confirm");
       document.getElementById("back").textContent = t("back");
+      document.getElementById("success-message").textContent = t("reservationSucceeded");
+      document.querySelector("[data-reservation-code-label]").textContent = t("reservationCodeLabel");
+      document.getElementById("reservation-code-notice").textContent = t("reservationCodeNotice");
+      document.querySelector("#reservation-success .btn").textContent = t("returnTop");
     }
 
     if (page === "admin") {
       document.title = t("adminTitle");
       document.querySelector("h2").textContent = t("adminTitle");
-      document.querySelector("[data-page-subtitle]").textContent = t("adminSubtitle");
+      subtitle.textContent = t("adminSubtitle");
       setTextList("#result-table thead th", t("adminHeaders"));
       document.getElementById("export-btn").textContent = t("exportCsv");
+      setTextList("[data-admin-tab]", t("adminTabs"));
+      setTextList("[data-slot-label]", t("slotLabels"));
+      setTextList("[data-settings-label]", t("settingsLabels"));
+      document.getElementById("save-slot").textContent = t("saveSlot");
+      document.getElementById("save-settings").textContent = t("saveSettings");
       document.querySelector(".actions .cancel").textContent = t("returnTop");
+      document.getElementById("staff-login").textContent = t("staffLogin");
     }
 
     if (page === "cancellation") {
       document.title = t("cancelTitle");
       document.querySelector("h2").textContent = t("cancelTitle");
-      document.querySelector("[data-page-subtitle]").textContent = t("cancelSubtitle");
-      document.getElementById("name").placeholder = t("searchPlaceholder");
+      subtitle.textContent = t("cancelSubtitle");
+      document.getElementById("reservation-code").placeholder = t("reservationCodePlaceholder");
       document.getElementById("search").textContent = t("search");
       setTextList("#result-table thead th", t("cancelHeaders"));
       document.querySelector(".actions .cancel").textContent = t("returnTop");
     }
-
   }
 
-  /** Adds the persistent Japanese/English switch at the top of each page. */
+  /** 在页面顶部创建日文/英文切换按钮。 */
   function createLanguageSwitch() {
     const container = document.querySelector(".container");
     if (!container || document.querySelector(".language-switch")) return;
@@ -192,7 +224,7 @@ window.ReservationApp = (() => {
     container.prepend(switcher);
   }
 
-  /** Marks the active language button for visual and assistive-technology feedback. */
+  /** 用样式和辅助属性标记当前启用的语言。 */
   function updateLanguageSwitch() {
     document.querySelectorAll(".language-switch button").forEach((button) => {
       const selected = button.dataset.language === language;
@@ -201,20 +233,20 @@ window.ReservationApp = (() => {
     });
   }
 
-  /** Saves a language choice, refreshes the page copy, and notifies page modules. */
+  /** 保存语言选择、刷新页面文字，并通知各页面脚本更新动态内容。 */
   function setLanguage(nextLanguage) {
     language = nextLanguage === "en" ? "en" : "ja";
     try {
       localStorage.setItem(storageKey, language);
     } catch {
-      // Browsing still works when storage is unavailable.
+      // 浏览器禁止本地存储时，仍可在当前页面正常切换语言。
     }
     applyPageCopy();
     updateLanguageSwitch();
-    document.dispatchEvent(new CustomEvent("reservation-language-change", { detail: { language } }));
+    document.dispatchEvent(new CustomEvent("reservation-language-change"));
   }
 
-  /** Loads the shared footer fragment without duplicating it in every HTML file. */
+  /** 载入全站共用页脚，避免每个页面重复维护同一段 HTML。 */
   async function loadFooter() {
     const container = document.getElementById("footer-container");
     if (!container) return;
@@ -222,18 +254,18 @@ window.ReservationApp = (() => {
       const response = await fetch("footer.html");
       container.innerHTML = await response.text();
     } catch (error) {
-      console.error("Unable to load footer:", error);
+      console.error("页脚载入失败：", error);
     }
   }
 
-  /** Formats a stored M/D date in the language currently selected by the visitor. */
-  function formatJapaneseDate(dateString) {
-    const [month, day] = dateString.split("/").map(Number);
-    const date = new Date(2026, month - 1, day);
+  /** 按当前语言格式化数据库保存的 ISO 日期。 */
+  function formatDate(dateString) {
+    const date = new Date(dateString + "T00:00:00");
     const weekdays = language === "ja"
       ? ["日", "月", "火", "水", "木", "金", "土"]
       : ["Sun.", "Mon.", "Tue.", "Wed.", "Thu.", "Fri.", "Sat."];
-
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
     return language === "ja"
       ? month + "月" + day + "日（" + weekdays[date.getDay()] + "）"
       : month + "/" + day + " (" + weekdays[date.getDay()] + ")";
@@ -242,5 +274,5 @@ window.ReservationApp = (() => {
   createLanguageSwitch();
   setLanguage(language);
 
-  return { client, formatJapaneseDate, loadFooter, t, getLanguage, localizeSlotLabels };
+  return { client, formatDate, loadFooter, t, localizeSlotLabels };
 })();

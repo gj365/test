@@ -1,104 +1,94 @@
-const { client: supabaseClient, formatJapaneseDate, loadFooter, t } = window.ReservationApp;
-
+const { client: supabaseClient, formatDate, loadFooter, t } = window.ReservationApp;
 const table = document.getElementById("result-table");
 const tbody = table.querySelector("tbody");
 const emptyMessage = document.getElementById("empty");
-let searchResults = [];
+let reservation = null;
+let reservationCode = "";
 
 loadFooter();
 
-/** Adds one safe text-only cell to a reservation result row. */
+/** 安全地向表格行写入纯文本单元格，避免用户资料被当作 HTML 执行。 */
 function appendCell(row, value) {
   const cell = document.createElement("td");
   cell.textContent = value || "";
   row.appendChild(cell);
 }
 
-/** Renders the latest reservation search results and their cancel controls. */
-function renderResults() {
+/** 将预约编号验证通过后返回的单条预约资料显示在页面上。 */
+function renderReservation() {
   tbody.replaceChildren();
   emptyMessage.textContent = "";
-  table.style.display = searchResults.length ? "table" : "none";
+  table.style.display = reservation ? "table" : "none";
+  if (!reservation) return;
 
-  searchResults.forEach((enrollment) => {
-    const row = document.createElement("tr");
-    appendCell(row, formatJapaneseDate(enrollment.date));
-    appendCell(row, enrollment.time_slot);
-    appendCell(row, enrollment.name);
-    appendCell(row, enrollment.kana);
-    appendCell(row, enrollment.nationality);
-    appendCell(row, enrollment.status);
+  const row = document.createElement("tr");
+  appendCell(row, formatDate(reservation.slot_date));
+  appendCell(row, reservation.time_slot);
+  appendCell(row, reservation.name);
+  appendCell(row, reservation.kana);
+  appendCell(row, reservation.nationality);
+  appendCell(row, reservation.status);
 
-    const actionCell = document.createElement("td");
-    const cancelButton = document.createElement("button");
-    cancelButton.type = "button";
-    cancelButton.className = "btn cancel";
-    cancelButton.textContent = t("cancel");
-    cancelButton.addEventListener("click", () => cancelEnrollment(enrollment));
-    actionCell.appendChild(cancelButton);
-    row.appendChild(actionCell);
-    tbody.appendChild(row);
-  });
+  const actionCell = document.createElement("td");
+  const cancelButton = document.createElement("button");
+  cancelButton.type = "button";
+  cancelButton.className = "btn cancel";
+  cancelButton.textContent = t("cancel");
+  cancelButton.addEventListener("click", cancelReservation);
+  actionCell.appendChild(cancelButton);
+  row.appendChild(actionCell);
+  tbody.appendChild(row);
 }
 
-/** Confirms and removes the selected reservation, then returns to the schedule. */
-async function cancelEnrollment(enrollment) {
-  if (!confirm(t("cancelPrompt", formatJapaneseDate(enrollment.date), enrollment.time_slot))) return;
+/** 以预约编号为凭证取消记录，避免只凭姓名删除他人的预约。 */
+async function cancelReservation() {
+  if (!reservation) return;
+  if (!confirm(t("cancelPrompt", formatDate(reservation.slot_date), reservation.time_slot))) return;
 
-  const { error } = await supabaseClient
-    .from("enrollments")
-    .delete()
-    .eq("name", enrollment.name)
-    .eq("date", enrollment.date)
-    .eq("time_slot", enrollment.time_slot);
+  const { data, error } = await supabaseClient.rpc("cancel_my_reservation", {
+    p_reservation_code: reservationCode
+  });
 
-  if (error) {
-    console.error(error);
+  if (error || !data) {
+    console.error("取消预约失败：", error);
     alert(t("loadFailed"));
     return;
   }
 
   alert(t("cancelSucceeded"));
-  window.setTimeout(() => { window.location.href = "index.html"; }, 800);
+  window.location.href = "index.html";
 }
 
-// Search only after a visitor explicitly submits the alphabetic reservation name.
+// 点击查询时仅把预约编号交给数据库函数，不公开完整预约表。
 document.getElementById("search").addEventListener("click", async () => {
-  const name = document.getElementById("name").value.trim();
-  if (!name) {
-    alert(t("enterName"));
+  reservationCode = document.getElementById("reservation-code").value.trim().toUpperCase();
+  if (!reservationCode) {
+    alert(t("enterReservationCode"));
     return;
   }
 
-  tbody.replaceChildren();
-  emptyMessage.textContent = "";
-  table.style.display = "none";
-
-  const { data, error } = await supabaseClient
-    .from("enrollments")
-    .select("*")
-    .eq("name", name);
-
-  if (error) {
-    alert(t("loadFailed"));
-    console.error(error);
-    return;
-  }
-
-  searchResults = data.sort((a, b) => {
-    if (a.date !== b.date) return a.date.localeCompare(b.date);
-    return a.time_slot.localeCompare(b.time_slot);
+  const { data, error } = await supabaseClient.rpc("find_my_reservation", {
+    p_reservation_code: reservationCode
   });
 
-  if (!searchResults.length) {
+  if (error) {
+    console.error("预约查询失败：", error);
+    alert(t("loadFailed"));
+    return;
+  }
+
+  reservation = data && data.length ? data[0] : null;
+  if (!reservation) {
+    tbody.replaceChildren();
+    table.style.display = "none";
     emptyMessage.textContent = t("noReservation");
     return;
   }
 
-  renderResults();
+  renderReservation();
 });
 
-// Rebuild existing search results so table labels and dates follow the chosen language.
+// 切换语言时重新绘制已有查询结果的日期、按钮与表格文字。
 document.addEventListener("reservation-language-change", () => {
-  if (searchResults.length) renderResults();
+  if (reservation) renderReservation();
 });
