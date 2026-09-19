@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>予約管理</title>
+  
+</head>
+
+<body data-page="admin">
+
+  <div class="container">
+
+    <h2>予約一覧 / Reservation List</h2>
+
+    <table id="result-table">
+      <thead>
+        <tr>
+          <th>番号</th>
+          <th>日程</th>
+          <th>時間</th>
+          <th>名前</th>
+          <th>カタカナ</th>
+          <th>国籍・地域</th>
+          <th>身分</th>
+          <th>登録日時</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="actions">
+      <button id="export-btn" class="btn primary">CSVエクスポート</button>
+      <a href="index.html" class="btn cancel">Topに戻る</a>
+    </div>
+
+  </div>
+
+  <div id="footer-container"></div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <script src="assets/js/common.js"></script>
+  <script src="assets/js/admin.js"></script>
+</body>
+
+</html>
+
