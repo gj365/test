@@ -9,6 +9,9 @@
 <body data-page="schedule-settings">
   <div class="container">
     <h2>予約枠設定</h2>
+    <p class="settings-deadline"><label for="deadline" id="deadline-label">予約締切（日本時間）</label>
+      <input type="datetime-local" id="deadline" required value="2026-10-17T23:00">
+    </p>
     <table id="schedule-settings">
       <thead>
         <tr>
@@ -22,12 +25,15 @@
       <tbody></tbody>
     </table>
     <div class="buttons">
-      <a href="index.html" class="btn cancel">トップへ戻る</a>
+      <button type="button" id="save-settings" class="btn primary" disabled>保存</button>
+      <a href="result.html" class="btn cancel">予約管理へ戻る</a>
     </div>
+    <p id="settings-message" role="status" aria-live="polite"></p>
   </div>
   <div id="footer-container"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/common.js"></script>
+  <script src="assets/js/schedule-config.js"></script>
   <script src="assets/js/schedule-settings.js"></script>
 </body>
 </html>

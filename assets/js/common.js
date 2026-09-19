@@ -34,6 +34,14 @@ window.ReservationApp = (() => {
       settingsTime: "時間",
       settingsDate: "日程",
       settingsSeats: "定員",
+      settingsDeadline: "予約締切（日本時間）",
+      settingsSave: "保存",
+      settingsSaving: "保存中…",
+      settingsSaved: "保存しました。予約ページに反映されます。",
+      settingsInvalid: "異なる有効な日付を4つと予約締切を入力してください。",
+      settingsLoadFailed: "設定を読み込めません。データベースの設定と接続を確認してから再読み込みしてください。",
+      settingsSaveFailed: "保存できませんでした。パスワードと接続を確認してください。",
+      settingsBack: "予約管理へ戻る",
       adminTitle: "予約一覧",
       adminHeaders: ["番号", "日程", "時間", "氏名", "カタカナ", "国籍・地域", "身分", "登録日時"],
       exportCsv: "CSV をダウンロード",
@@ -77,6 +85,14 @@ window.ReservationApp = (() => {
       settingsTime: "Time",
       settingsDate: "Date",
       settingsSeats: "Capacity",
+      settingsDeadline: "Reservation deadline (Japan time)",
+      settingsSave: "Save",
+      settingsSaving: "Saving…",
+      settingsSaved: "Saved. The reservation page will use these settings.",
+      settingsInvalid: "Choose four distinct valid dates and a reservation deadline.",
+      settingsLoadFailed: "Unable to load settings. Check the database setup and connection, then reload.",
+      settingsSaveFailed: "Unable to save. Check the password and connection.",
+      settingsBack: "Back to reservation management",
       adminTitle: "Reservation list",
       adminHeaders: ["No.", "Date", "Time", "Name", "Katakana", "Nationality / region", "Status", "Created at"],
       exportCsv: "Download CSV",
@@ -129,8 +145,9 @@ window.ReservationApp = (() => {
     if (page === "schedule") {
       document.title = t("scheduleTitle");
       document.querySelector("h2").textContent = t("scheduleTitle");
-      setTextList("#schedule thead th", t("scheduleHeaders"));
-      document.querySelector(".break").textContent = t("break");
+      document.querySelector("#schedule thead th").textContent = t("scheduleHeaders")[0];
+      const breakCell = document.querySelector(".break");
+      if (breakCell) breakCell.textContent = t("break");
       setTextList(".buttons .btn", t("scheduleButtons"));
       localizeSlotLabels();
     }
@@ -153,7 +170,9 @@ window.ReservationApp = (() => {
       document.title = t("settingsTitle");
       document.querySelector("h2").textContent = t("settingsTitle");
       document.getElementById("settings-time").textContent = t("settingsTime");
-      document.querySelector(".buttons .cancel").textContent = t("returnTop");
+      document.getElementById("deadline-label").textContent = t("settingsDeadline");
+      document.getElementById("save-settings").textContent = t("settingsSave");
+      document.querySelector(".buttons .cancel").textContent = t("settingsBack");
     }
 
     if (page === "admin") {
@@ -161,6 +180,7 @@ window.ReservationApp = (() => {
       document.querySelector("h2").textContent = t("adminTitle");
       setTextList("#result-table thead th", t("adminHeaders"));
       document.getElementById("export-btn").textContent = t("exportCsv");
+      document.getElementById("settings-link").textContent = t("settingsTitle");
       document.querySelector(".actions .cancel").textContent = t("returnTop");
     }
 
@@ -221,8 +241,10 @@ window.ReservationApp = (() => {
   }
 
   function formatJapaneseDate(dateString) {
-    const [month, day] = dateString.split("/").map(Number);
-    const date = new Date(2026, month - 1, day);
+    const [year, month, day] = /^\d{4}-\d{2}-\d{2}$/.test(dateString)
+      ? dateString.split("-").map(Number)
+      : [2026, ...dateString.split("/").map(Number)];
+    const date = new Date(year, month - 1, day);
     const weekdays = language === "ja"
       ? ["日", "月", "火", "水", "木", "金", "土"]
       : ["Sun.", "Mon.", "Tue.", "Wed.", "Thu.", "Fri.", "Sat."];

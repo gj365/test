@@ -146,6 +146,8 @@ input:focus, select:focus { outline: 3px solid rgb(20 184 166 / 22%); border-col
 #schedule-settings input, #schedule-settings select { margin-top: 0; }
 #schedule-settings select { appearance: auto; }
 #schedule-settings td:first-child { white-space: nowrap; }
+.settings-deadline { max-width: 360px; margin-bottom: 24px; }
+#settings-message { color: var(--brand-dark); }
 
 .btn {
   display: inline-flex;
