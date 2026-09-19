@@ -30,6 +30,10 @@ window.ReservationApp = (() => {
       reservationSucceeded: "予約が完了しました。",
       adminPasswordPrompt: "管理者パスワードを入力してください：",
       adminPasswordFailed: "パスワードが正しくありません。",
+      settingsTitle: "予約枠設定",
+      settingsTime: "時間",
+      settingsDate: "日程",
+      settingsSeats: "定員",
       adminTitle: "予約一覧",
       adminHeaders: ["番号", "日程", "時間", "氏名", "カタカナ", "国籍・地域", "身分", "登録日時"],
       exportCsv: "CSV をダウンロード",
@@ -69,6 +73,10 @@ window.ReservationApp = (() => {
       reservationSucceeded: "Reservation successful.",
       adminPasswordPrompt: "Enter the administrator password:",
       adminPasswordFailed: "Incorrect password.",
+      settingsTitle: "Reservation slot settings",
+      settingsTime: "Time",
+      settingsDate: "Date",
+      settingsSeats: "Capacity",
       adminTitle: "Reservation list",
       adminHeaders: ["No.", "Date", "Time", "Name", "Katakana", "Nationality / region", "Status", "Created at"],
       exportCsv: "Download CSV",
@@ -139,6 +147,13 @@ window.ReservationApp = (() => {
       t("statusOptions").forEach((label, index) => { status.options[index + 1].textContent = label; });
       document.getElementById("confirm").textContent = t("confirm");
       document.getElementById("back").textContent = t("back");
+    }
+
+    if (page === "schedule-settings") {
+      document.title = t("settingsTitle");
+      document.querySelector("h2").textContent = t("settingsTitle");
+      document.getElementById("settings-time").textContent = t("settingsTime");
+      document.querySelector(".buttons .cancel").textContent = t("returnTop");
     }
 
     if (page === "admin") {

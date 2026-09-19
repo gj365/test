@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="assets/css/app.css">
+  <title>予約枠設定</title>
+</head>
+<body data-page="schedule-settings">
+  <div class="container">
+    <h2>予約枠設定</h2>
+    <table id="schedule-settings">
+      <thead>
+        <tr>
+          <th scope="col" id="settings-time">時間</th>
+          <th scope="col"><input type="date" value="2026-09-24" aria-label="日程 1"></th>
+          <th scope="col"><input type="date" value="2026-09-25" aria-label="日程 2"></th>
+          <th scope="col"><input type="date" value="2026-09-28" aria-label="日程 3"></th>
+          <th scope="col"><input type="date" value="2026-09-30" aria-label="日程 4"></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <div class="buttons">
+      <a href="index.html" class="btn cancel">トップへ戻る</a>
+    </div>
+  </div>
+  <div id="footer-container"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/common.js"></script>
+  <script src="assets/js/schedule-settings.js"></script>
+</body>
+</html>
