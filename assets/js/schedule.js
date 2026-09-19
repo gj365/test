@@ -1,6 +1,6 @@
 const { client: supabaseClient, loadFooter, t, localizeSlotLabels } = window.ReservationApp;
 
-const DEADLINE = new Date("2026-09-17T23:00:00");
+const DEADLINE = new Date("2026-10-17T23:00:00");
 let scheduleLoaded = false;
 
 loadFooter();
