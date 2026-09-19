@@ -37,7 +37,7 @@ window.ReservationApp = (() => {
       settingsDeadline: "予約締切（日本時間）",
       settingsSave: "保存",
       settingsSaving: "保存中…",
-      settingsSaved: "保存しました。予約ページに反映されます。",
+      settingsSaved: "保存しました。予約送信時の定員・締切確認に使用されます。",
       settingsInvalid: "異なる有効な日付を4つと予約締切を入力してください。",
       settingsLoadFailed: "設定を読み込めません。データベースの設定と接続を確認してから再読み込みしてください。",
       settingsSaveFailed: "保存できませんでした。パスワードと接続を確認してください。",
@@ -88,7 +88,7 @@ window.ReservationApp = (() => {
       settingsDeadline: "Reservation deadline (Japan time)",
       settingsSave: "Save",
       settingsSaving: "Saving…",
-      settingsSaved: "Saved. The reservation page will use these settings.",
+      settingsSaved: "Saved. These settings will be checked when submitting a reservation.",
       settingsInvalid: "Choose four distinct valid dates and a reservation deadline.",
       settingsLoadFailed: "Unable to load settings. Check the database setup and connection, then reload.",
       settingsSaveFailed: "Unable to save. Check the password and connection.",
@@ -145,7 +145,7 @@ window.ReservationApp = (() => {
     if (page === "schedule") {
       document.title = t("scheduleTitle");
       document.querySelector("h2").textContent = t("scheduleTitle");
-      document.querySelector("#schedule thead th").textContent = t("scheduleHeaders")[0];
+      setTextList("#schedule thead th", t("scheduleHeaders"));
       const breakCell = document.querySelector(".break");
       if (breakCell) breakCell.textContent = t("break");
       setTextList(".buttons .btn", t("scheduleButtons"));
